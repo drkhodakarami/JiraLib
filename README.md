@@ -12,7 +12,7 @@
 
 ## ➤ What is this library?
 
-This is a simple yet useful library that containst some base repetitively used helper methods, network payload and non payload records, interfaces and
+This is a simple yet useful library that contains some base repetitively used helper methods, network payload and non payload records, interfaces and
 abstract classes for blocks and block entities. Using the ITickBE you can easily generate a ticking block entity and by extending the block entity from
 UpdatableBE, you can easily sync information between server and client, no more need to send custom network packets to sync the fluid/energy values!
 
@@ -22,7 +22,7 @@ UpdatableBE, you can easily sync information between server and client, no more 
 
 This library is using repsy for maven publishing system. Follow the guideline bellow to make dependency for your mod.
 
-### ➤ Latest Version: 1.0.0+MC_1.21.3
+### ➤ Latest Version: 1.1.1+MC_1.21.3
 
 First you need to add the maven to your `build.gradle` repositories:
 
