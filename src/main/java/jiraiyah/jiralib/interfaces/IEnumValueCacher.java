@@ -49,5 +49,5 @@ public interface IEnumValueCacher<T extends Enum<?>>
      *
      * @return an array of the cached enum values
      */
-    T[] getValues();
+    T[] values();
 }

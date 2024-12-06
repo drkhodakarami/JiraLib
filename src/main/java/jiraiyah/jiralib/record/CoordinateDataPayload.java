@@ -22,50 +22,67 @@
  * SOFTWARE.                                                                       *
  ***********************************************************************************/
 
-package jiraiyah.jiralib.network;
+package jiraiyah.jiralib.record;
 
-import net.minecraft.network.RegistryByteBuf;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
 /**
- * A custom payload for sending a {@link BlockPos} over the network.
+ * A record class representing a block position and its dimension.
  *
- * @author TurtyWurty
+ * @author Jiraiyah
  */
 @SuppressWarnings("unused")
-public record BlockPosPayload(BlockPos pos) implements CustomPayload
+public record CoordinateDataPayload(BlockPos pos, String dimension) implements CustomPayload
 {
     /**
-     * The unique identifier for the {@link BlockPosPayload} type.
+     * The unique identifier for the {@link CoordinateDataPayload} type.
      * <p>
-     * This ID is used to distinguish the {@link BlockPosPayload} when it is sent
+     * This ID is used to distinguish the {@link CoordinateDataPayload} when it is sent
      * over the network. It is constructed using an {@link Identifier} with the
-     * namespace "jiralib" and the path "block_pos_payload".
+     * namespace "jiralib" and the path "coordinate_data_payload".
      * </p>
      */
-    public static final Id<BlockPosPayload> ID = new Id<>(Identifier.of("jiralib","block_pos_payload"));
+    public static final Id<CoordinateDataPayload> ID = new Id<>(Identifier.of("jiralib", "coordinate_data_payload"));
 
     /**
-     * A packet codec for encoding and decoding {@link BlockPosPayload} objects
-     * to and from {@link RegistryByteBuf}.
+     * A codec for serializing and deserializing {@link CoordinateDataPayload} objects.
      * <p>
-     * This codec utilizes the organization's internal {@link PacketCodec} framework
-     * to facilitate the serialization and deserialization of {@link BlockPosPayload}
-     * within network packets. It ensures that the data is correctly transformed
-     * between its in-memory representation and its byte stream format.
-     * The codec uses the {@link BlockPos} for encoding and decoding.
+     * This codec uses {@link RecordCodecBuilder} to define the structure of the
+     * {@link CoordinateDataPayload} record, specifying how each field should be encoded
+     * and decoded. The {@code pos} field is encoded using {@link BlockPos#CODEC},
+     * and the {@code dimension} field is encoded as a string.
      * </p>
      */
-    public static final PacketCodec<RegistryByteBuf, BlockPosPayload> PACKET_CODEC =
-            PacketCodec.tuple(BlockPos.PACKET_CODEC, BlockPosPayload::pos, BlockPosPayload::new);
+    public static final Codec<CoordinateDataPayload> CODEC = RecordCodecBuilder.create(inst -> inst.group(
+            BlockPos.CODEC.fieldOf("pos").forGetter(CoordinateDataPayload::pos),
+            Codec.STRING.fieldOf("dimension").forGetter(CoordinateDataPayload::dimension)
+    ).apply(inst, CoordinateDataPayload::new));
+    /**
+     * A packet codec for encoding and decoding {@link CoordinateDataPayload} objects
+     * to and from {@link PacketByteBuf}.
+     * <p>
+     * This codec utilizes the organization's internal {@link PacketCodec} framework
+     * to facilitate the serialization and deserialization of {@link CoordinateDataPayload}
+     * within network packets. It ensures that the data is correctly transformed
+     * between its in-memory representation and its byte stream format.
+     * </p>
+     */
+    public static final PacketCodec<PacketByteBuf, CoordinateDataPayload> PACKET_CODEC =
+            PacketCodec.tuple(BlockPos.PACKET_CODEC, CoordinateDataPayload::pos,
+                              PacketCodecs.STRING, CoordinateDataPayload::dimension,
+                              CoordinateDataPayload::new);
 
     /**
      * Retrieves the unique identifier for this payload type.
      *
-     * @return The ID associated with this BlockPosPayload.
+     * @return The ID associated with this FloatPayload.
      */
     @Override
     public Id<? extends CustomPayload> getId()

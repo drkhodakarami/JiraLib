@@ -26,6 +26,7 @@ package jiraiyah.jiralib;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * This class provides helper methods for working with block positions.
@@ -43,7 +44,7 @@ public class PosHelper
      *
      * @return The new position.
      */
-    public static BlockPos getPositionDirectionTo(BlockPos pos, Direction direction)
+    public static BlockPos positionDirectTo(BlockPos pos, Direction direction)
     {
         return pos.offset(direction);
     }
@@ -55,7 +56,7 @@ public class PosHelper
      *
      * @return An array of new positions.
      */
-    public static BlockPos[] getPositionNextTo(BlockPos pos)
+    public static BlockPos[] positionNextTo(BlockPos pos)
     {
         return new BlockPos[]{pos.up(), pos.down(), pos.east(), pos.west(), pos.north(), pos.south()};
     }
@@ -67,7 +68,7 @@ public class PosHelper
      *
      * @return An array of new positions.
      */
-    public static BlockPos[] getPositionSideTo(BlockPos pos)
+    public static BlockPos[] positionSideTo(BlockPos pos)
     {
         return new BlockPos[]{pos.east(), pos.west(), pos.north(), pos.south()};
     }
@@ -79,9 +80,22 @@ public class PosHelper
      *
      * @return An array of new positions.
      */
-    public static BlockPos[] getPositionSideBottomTo(BlockPos pos)
+    public static BlockPos[] positionNextNotTop(BlockPos pos)
     {
         return new BlockPos[]{pos.down(), pos.east(), pos.west(), pos.north(), pos.south()};
+    }
+
+
+    /**
+     * Returns an array of positions that are one block in each direction from the given position, excluding bottom.
+     *
+     * @param pos The position to move from.
+     *
+     * @return An array of new positions.
+     */
+    public static BlockPos[] positionNextNotBottom(BlockPos pos)
+    {
+        return new BlockPos[]{pos.up(), pos.east(), pos.west(), pos.north(), pos.south()};
     }
 
     /**
@@ -164,31 +178,9 @@ public class PosHelper
      *
      * @return The new position.
      */
-    public static BlockPos getLeftBlock(BlockPos pos, Direction facing)
+    public static BlockPos leftBlock(BlockPos pos, Direction facing)
     {
-        switch (facing)
-        {
-            case NORTH ->
-            {
-                return pos.west();
-            }
-            case SOUTH ->
-            {
-                return pos.east();
-            }
-            case WEST ->
-            {
-                return pos.south();
-            }
-            case EAST ->
-            {
-                return pos.north();
-            }
-            default ->
-            {
-                return pos;
-            }
-        }
+        return pos.offset(left(facing));
     }
 
     /**
@@ -199,31 +191,9 @@ public class PosHelper
      *
      * @return The new position.
      */
-    public static BlockPos getRightBlock(BlockPos pos, Direction facing)
+    public static BlockPos rightBlock(BlockPos pos, Direction facing)
     {
-        switch (facing)
-        {
-            case NORTH ->
-            {
-                return pos.east();
-            }
-            case SOUTH ->
-            {
-                return pos.west();
-            }
-            case WEST ->
-            {
-                return pos.north();
-            }
-            case EAST ->
-            {
-                return pos.south();
-            }
-            default ->
-            {
-                return pos;
-            }
-        }
+        return pos.offset(right(facing));
     }
 
     /**
@@ -234,31 +204,9 @@ public class PosHelper
      *
      * @return The new position.
      */
-    public static BlockPos getBackBlock(BlockPos pos, Direction facing)
+    public static BlockPos backBlock(BlockPos pos, Direction facing)
     {
-        switch (facing)
-        {
-            case NORTH ->
-            {
-                return pos.north();
-            }
-            case SOUTH ->
-            {
-                return pos.south();
-            }
-            case WEST ->
-            {
-                return pos.west();
-            }
-            case EAST ->
-            {
-                return pos.east();
-            }
-            default ->
-            {
-                return pos;
-            }
-        }
+        return pos.offset(back(facing));
     }
 
     /**
@@ -269,31 +217,9 @@ public class PosHelper
      *
      * @return The new position.
      */
-    public static BlockPos getFrontBlock(BlockPos pos, Direction facing)
+    public static BlockPos frontBlock(BlockPos pos, Direction facing)
     {
-        switch (facing)
-        {
-            case NORTH ->
-            {
-                return pos.south();
-            }
-            case SOUTH ->
-            {
-                return pos.north();
-            }
-            case WEST ->
-            {
-                return pos.east();
-            }
-            case EAST ->
-            {
-                return pos.west();
-            }
-            default ->
-            {
-                return pos;
-            }
-        }
+        return pos.offset(front(facing));
     }
 
     /**
@@ -303,7 +229,7 @@ public class PosHelper
      *
      * @return The new position.
      */
-    public static BlockPos getTopBlock(BlockPos pos)
+    public static BlockPos topBlock(BlockPos pos)
     {
         return pos.up();
     }
@@ -315,8 +241,44 @@ public class PosHelper
      *
      * @return The new position.
      */
-    public static BlockPos getBottomBlock(BlockPos pos)
+    public static BlockPos bottomBlock(BlockPos pos)
     {
         return pos.down();
+    }
+
+    /**
+     * Calculates the relative direction based on the given `direction` and `facing`.
+     *
+     * <p>This method determines the direction relative to a specified facing direction.
+     * If either `direction` or `facing` is null, the method will handle these cases
+     * appropriately, potentially returning null or a default value depending on the
+     * implementation details.</p>
+     *
+     * @param direction the initial direction from which the relative direction is calculated.
+     *                  This parameter can be null, in which case the behavior should be defined
+     *                  by the implementation.
+     * @param facing the reference direction to which the relative direction is calculated.
+     *               This parameter can also be null, and similar to `direction`, the behavior
+     *               should be defined by the implementation.
+     * @return the direction that is relative to the given `facing` direction. The return value
+     *         may be null if the input parameters are null or if the calculation results in an
+     *         undefined direction.
+     * @author TurtyWurty
+     */
+    public static Direction getRelativeDirection(@Nullable Direction direction, @Nullable Direction facing)
+    {
+        if(direction == null)
+            return null;
+        else if(facing == null)
+            return direction;
+        else if(direction.getAxis().isVertical())
+            return direction;
+
+        Direction relative = direction;
+        for (int i = 0; i < facing.ordinal(); i++) {
+            relative = relative.rotateYClockwise();
+        }
+
+        return relative;
     }
 }

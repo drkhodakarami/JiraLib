@@ -1,6 +1,6 @@
 package jiraiyah.jiralib.interfaces;
 
-import jiraiyah.jiralib.blockentity.UpdatableBE;
+import jiraiyah.jiralib.blockentity.NoScreenUpdatableBE;
 
 import java.util.List;
 
@@ -119,7 +119,7 @@ public interface ITickSyncBE extends ITickBE
         if (getSyncables() != null && !getSyncables().isEmpty())
             getSyncables().forEach(ISync::sync);
 
-        if (this instanceof UpdatableBE updatableBE)
+        if (this instanceof NoScreenUpdatableBE updatableBE)
             updatableBE.endTick();
     }
 }

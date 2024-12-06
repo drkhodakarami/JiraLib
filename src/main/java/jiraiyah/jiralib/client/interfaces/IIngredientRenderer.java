@@ -61,6 +61,21 @@ public interface IIngredientRenderer<T>
     }
 
     /**
+     * Renders the ingredient at the specified position.
+     * This method provides a way to render an ingredient at a specific
+     * position within the rendering context. The position is specified
+     * by the x and y coordinates. The ingredient to be rendered can be
+     * null, in which case no rendering should occur.
+     *
+     * @param stack The matrix stack used for rendering transformations.
+     * @param x The x-coordinate position for rendering.
+     * @param y The y-coordinate position for rendering.
+     * @param ingredient The ingredient to render, which can be null.
+     */
+    default void render(MatrixStack stack, int x, int y, @Nullable T ingredient)
+    {}
+
+    /**
      * Retrieves the tooltip for the specified ingredient.
      * This method is responsible for generating a list of text components
      * that represent the tooltip for a given ingredient. The tooltip can
@@ -72,7 +87,7 @@ public interface IIngredientRenderer<T>
      * @param modid The mod identifier for which the tooltip is being generated.
      * @return A list of text components representing the tooltip.
      */
-    List<Text> getTooltip(T ingredient, Item.TooltipContext tooltipFlag, String modid);
+    List<Text> tooltip(T ingredient, Item.TooltipContext tooltipFlag, String modid);
 
     /**
      * Gets the font renderer used for rendering text associated with the ingredient.
@@ -80,13 +95,13 @@ public interface IIngredientRenderer<T>
      * for rendering any text related to the ingredient. By default, it
      * returns the text renderer from the provided Minecraft client instance.
      *
-     * @param minecraft The Minecraft client instance.
+     * @param client The Minecraft client instance.
      * @param ingredient The ingredient for which the font renderer is requested.
      * @return The font renderer instance.
      */
-    default TextRenderer getFontRenderer(MinecraftClient minecraft, T ingredient)
+    default TextRenderer fontRenderer(MinecraftClient client, T ingredient)
     {
-        return minecraft.textRenderer;
+        return client.textRenderer;
     }
 
     /**
@@ -96,7 +111,7 @@ public interface IIngredientRenderer<T>
      *
      * @return The width in pixels.
      */
-    default int getWidth()
+    default int width()
     {
         return 16;
     }
@@ -108,23 +123,8 @@ public interface IIngredientRenderer<T>
      *
      * @return The height in pixels.
      */
-    default int getHeight()
+    default int height()
     {
         return 16;
     }
-
-    /**
-     * Renders the ingredient at the specified position.
-     * This method provides a way to render an ingredient at a specific
-     * position within the rendering context. The position is specified
-     * by the x and y coordinates. The ingredient to be rendered can be
-     * null, in which case no rendering should occur.
-     *
-     * @param stack The matrix stack used for rendering transformations.
-     * @param xPosition The x-coordinate position for rendering.
-     * @param yPosition The y-coordinate position for rendering.
-     * @param ingredient The ingredient to render, which can be null.
-     */
-    default void render(MatrixStack stack, int xPosition, int yPosition, @Nullable T ingredient)
-    {}
 }

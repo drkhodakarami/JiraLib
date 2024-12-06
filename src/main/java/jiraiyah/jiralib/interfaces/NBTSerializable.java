@@ -66,19 +66,57 @@ import net.minecraft.registry.RegistryWrapper;
 public interface NBTSerializable<T extends NbtElement>
 {
     /**
-     * Writes the object to an NBT element.
+     * Serializes the current state of the implementing object into an NBT element.
+     * This method is crucial for converting the object's data into a structured format
+     * that can be easily stored, transferred, and reconstructed within the Minecraft
+     * environment using the NBT system.
+     * <p>The serialization process involves encoding the object's properties and any
+     * relevant metadata into an NBT element, which is a hierarchical data structure
+     * used extensively in Minecraft for data storage and manipulation.
+     * <p>Implementers of this method should ensure that all relevant fields and properties
+     * of the object are included in the NBT element. Additionally, care should be taken
+     * to maintain compatibility with the NBT format and any versioning requirements
+     * that may exist within the application.
      *
-     * @param registryLookup The registry lookup to use when serializing the object.
-     *
-     * @return The NBT element that represents the object.
+     * @param registryLookup an instance of {@link RegistryWrapper.WrapperLookup} that
+     *                       provides access to the game's registry data. This parameter
+     *                       is essential for resolving any dependencies or references
+     *                       that the object may have within the game's ecosystem. It
+     *                       ensures that all necessary data is accurately captured and
+     *                       linked during the serialization process.
+     * @return an NBT element representing the serialized state of the object. This
+     *         element encapsulates all the necessary information to reconstruct the
+     *         object at a later time or in a different context. It is particularly
+     *         useful for saving the object's state to disk or transmitting it over
+     *         a network.
      */
     T writeNbt(RegistryWrapper.WrapperLookup registryLookup);
 
     /**
-     * Reads the object from an NBT element.
+     * Deserializes the state of the implementing object from the provided NBT element.
+     * This method is responsible for reconstructing the object's state by extracting
+     * and interpreting the data stored within the NBT element. It is a critical part
+     * of the serialization process, allowing objects to be restored to their original
+     * state after being saved or transmitted.
+     * <p>The deserialization process involves reading the hierarchical data structure
+     * of the NBT element and mapping its contents back to the object's fields and
+     * properties. This ensures that the object can be accurately reconstructed with
+     * all its original data intact.
+     * <p>Implementers of this method should ensure that all relevant fields and properties
+     * of the object are correctly populated from the NBT element. Additionally, care
+     * should be taken to handle any potential discrepancies or versioning issues that
+     * may arise from changes in the NBT format or the object's structure over time.
      *
-     * @param nbt            The NBT element to read the object from.
-     * @param registryLookup The registry lookup to use when deserializing the object.
+     * @param nbt an instance of the NBT element from which the object's data will be
+     *            read. This element contains the serialized data that represents the
+     *            object's state. It is expected to have been created by a corresponding
+     *            call to the `writeNbt` method.
+     * @param registryLookup an instance of {@link RegistryWrapper.WrapperLookup} that
+     *                       provides access to the game's registry data. This parameter
+     *                       is essential for resolving any dependencies or references
+     *                       that the object may have within the game's ecosystem during
+     *                       the deserialization process. It ensures that all necessary
+     *                       data is accurately interpreted and linked.
      */
     void readNbt(T nbt, RegistryWrapper.WrapperLookup registryLookup);
 }

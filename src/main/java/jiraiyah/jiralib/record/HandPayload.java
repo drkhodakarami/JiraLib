@@ -22,14 +22,18 @@
  * SOFTWARE.                                                                       *
  ***********************************************************************************/
 
-package jiraiyah.jiralib.network;
+package jiraiyah.jiralib.record;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+
+import java.util.Objects;
 
 /**
  * A custom payload for sending the player's hand over the network.
@@ -48,6 +52,30 @@ public record HandPayload(Hand hand) implements CustomPayload
      * </p>
      */
     public static final Id<HandPayload> ID = new Id<>(Identifier.of("jiralib","hand_payload"));
+
+    /**
+     * A Codec for serializing and deserializing instances of {@link HandPayload}.
+     * <p>
+     * This Codec utilizes the {@link RecordCodecBuilder} to define the structure of the
+     * {@link HandPayload} object for encoding and decoding operations. It specifies
+     * how each field of the {@link HandPayload} should be processed during these operations.
+     * </p>
+     *
+     * <p>
+     * The Codec is used to convert {@link HandPayload} objects to a serialized form
+     * that can be transmitted over a network or stored, and to reconstruct the objects
+     * from this serialized form. This is particularly useful in scenarios where data
+     * needs to be shared between different parts of a system or between different systems.
+     * </p>
+     *
+     * @see Codec
+     * @see RecordCodecBuilder
+     * @see HandPayload
+     */
+    public static final Codec<HandPayload> CODEC = RecordCodecBuilder.create(inst -> inst.group(
+            Codec.STRING.xmap(str -> Objects.requireNonNull(Hand.valueOf(str)), Hand::name)
+                        .fieldOf("hand").forGetter(HandPayload::hand)
+    ).apply(inst, HandPayload::new));
 
     /**
      * A packet codec for encoding and decoding {@link HandPayload} objects

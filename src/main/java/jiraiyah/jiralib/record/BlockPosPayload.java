@@ -22,49 +22,75 @@
  * SOFTWARE.                                                                       *
  ***********************************************************************************/
 
-package jiraiyah.jiralib.network;
+package jiraiyah.jiralib.record;
 
-import io.netty.buffer.ByteBuf;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 
 /**
- * A custom payload that contains a single integer value.
+ * A custom payload for sending a {@link BlockPos} over the network.
  *
  * @author TurtyWurty
  */
 @SuppressWarnings("unused")
-public record IntegerPayload(int value) implements CustomPayload
+public record BlockPosPayload(BlockPos pos) implements CustomPayload
 {
     /**
-     * The unique identifier for the {@link IntegerPayload} type.
+     * The unique identifier for the {@link BlockPosPayload} type.
      * <p>
-     * This ID is used to distinguish the {@link IntegerPayload} when it is sent
+     * This ID is used to distinguish the {@link BlockPosPayload} when it is sent
      * over the network. It is constructed using an {@link Identifier} with the
-     * namespace "jiralib" and the path "integer_payload".
+     * namespace "jiralib" and the path "block_pos_payload".
      * </p>
      */
-    public static final Id<IntegerPayload> ID = new Id<>(Identifier.of("jiralib","integer_payload"));
+    public static final Id<BlockPosPayload> ID = new Id<>(Identifier.of("jiralib","block_pos_payload"));
 
     /**
-     * A packet codec for encoding and decoding {@link IntegerPayload} objects
-     * to and from {@link ByteBuf}.
+     * A Codec for serializing and deserializing instances of {@link BlockPosPayload}.
+     * <p>
+     * This Codec utilizes the {@link RecordCodecBuilder} to define the structure of the
+     * {@link BlockPosPayload} object for encoding and decoding operations. It specifies
+     * how each field of the {@link BlockPosPayload} should be processed during these operations.
+     * </p>
+     *
+     * <p>
+     * The Codec is used to convert {@link BlockPosPayload} objects to a serialized form
+     * that can be transmitted over a network or stored, and to reconstruct the objects
+     * from this serialized form. This is particularly useful in scenarios where data
+     * needs to be shared between different parts of a system or between different systems.
+     * </p>
+     *
+     * @see Codec
+     * @see RecordCodecBuilder
+     * @see BlockPosPayload
+     */
+    public static final Codec<BlockPosPayload> CODEC = RecordCodecBuilder.create(inst -> inst.group(
+            BlockPos.CODEC.fieldOf("pos").forGetter(BlockPosPayload::pos)
+    ).apply(inst, BlockPosPayload::new));
+
+    /**
+     * A packet codec for encoding and decoding {@link BlockPosPayload} objects
+     * to and from {@link RegistryByteBuf}.
      * <p>
      * This codec utilizes the organization's internal {@link PacketCodec} framework
-     * to facilitate the serialization and deserialization of {@link IntegerPayload}
+     * to facilitate the serialization and deserialization of {@link BlockPosPayload}
      * within network packets. It ensures that the data is correctly transformed
      * between its in-memory representation and its byte stream format.
+     * The codec uses the {@link BlockPos} for encoding and decoding.
      * </p>
      */
-    public static final PacketCodec<ByteBuf, IntegerPayload> PACKET_CODEC =
-            PacketCodec.tuple(PacketCodecs.INTEGER, IntegerPayload::value, IntegerPayload::new);
+    public static final PacketCodec<RegistryByteBuf, BlockPosPayload> PACKET_CODEC =
+            PacketCodec.tuple(BlockPos.PACKET_CODEC, BlockPosPayload::pos, BlockPosPayload::new);
 
     /**
      * Retrieves the unique identifier for this payload type.
      *
-     * @return The ID associated with this IntegerPayload.
+     * @return The ID associated with this BlockPosPayload.
      */
     @Override
     public Id<? extends CustomPayload> getId()

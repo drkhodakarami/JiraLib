@@ -39,7 +39,7 @@ import net.minecraft.client.util.math.Rect2i;
  * within a defined area.</p>
  */
 @SuppressWarnings("unused")
-public class InfoArea extends DrawContext
+public abstract class InfoArea extends DrawContext
 {
     /**
      * The rectangular area within which the information will be rendered.

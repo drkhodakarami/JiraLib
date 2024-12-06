@@ -26,53 +26,74 @@ package jiraiyah.jiralib.record;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
-import net.minecraft.network.RegistryByteBuf;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
+import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.util.Identifier;
 
 /**
- * Represents a stack of fluid in a game, encapsulating the fluid type and the amount.
+ * A custom payload that contains a single integer value.
  *
- * <p>This class is used to manage fluid quantities and their corresponding types
- * in a fluid handling system, such as in a Minecraft mod.</p>
- *
- * <p>It provides serialization and deserialization capabilities through codecs,
- * allowing for easy storage and network transmission of fluid data.</p>
- *
- * @param fluid The {@link FluidVariant} representing the type of fluid in the stack.
- * @param amount The long value representing the amount of fluid in the stack.
+ * @author TurtyWurty
  */
 @SuppressWarnings("unused")
-public record FluidStack(FluidVariant fluid, long amount)
+public record IntegerPayload(int value) implements CustomPayload
 {
     /**
-     * A codec for serializing and deserializing {@link FluidStack} objects.
+     * The unique identifier for the {@link IntegerPayload} type.
      * <p>
-     * This codec uses {@link RecordCodecBuilder} to define the structure of the
-     * {@link FluidStack} record, specifying how each field should be encoded
-     * and decoded. The {@code fluid} field is encoded using {@link FluidVariant#CODEC},
-     * and the {@code amount} field is encoded as a long.
+     * This ID is used to distinguish the {@link IntegerPayload} when it is sent
+     * over the network. It is constructed using an {@link Identifier} with the
+     * namespace "jiralib" and the path "integer_payload".
      * </p>
      */
-    public static final Codec<FluidStack> CODEC = RecordCodecBuilder.create(inst -> inst.group(
-            FluidVariant.CODEC.fieldOf("fluid").forGetter(FluidStack::fluid),
-            Codec.LONG.fieldOf("amount").forGetter(FluidStack::amount)
-    ).apply(inst, FluidStack::new));
+    public static final Id<IntegerPayload> ID = new Id<>(Identifier.of("jiralib","integer_payload"));
 
     /**
-     * A packet codec for encoding and decoding {@link FluidStack} objects
-     * to and from {@link RegistryByteBuf}.
+     * A Codec for serializing and deserializing instances of {@link IntegerPayload}.
+     * <p>
+     * This Codec utilizes the {@link RecordCodecBuilder} to define the structure of the
+     * {@link IntegerPayload} object for encoding and decoding operations. It specifies
+     * how each field of the {@link IntegerPayload} should be processed during these operations.
+     * </p>
+     *
+     * <p>
+     * The Codec is used to convert {@link IntegerPayload} objects to a serialized form
+     * that can be transmitted over a network or stored, and to reconstruct the objects
+     * from this serialized form. This is particularly useful in scenarios where data
+     * needs to be shared between different parts of a system or between different systems.
+     * </p>
+     *
+     * @see Codec
+     * @see RecordCodecBuilder
+     * @see IntegerPayload
+     */
+    public static final Codec<IntegerPayload> CODEC = RecordCodecBuilder.create(inst -> inst.group(
+            Codec.INT.fieldOf("value").forGetter(IntegerPayload::value)
+    ).apply(inst, IntegerPayload::new));
+
+    /**
+     * A packet codec for encoding and decoding {@link IntegerPayload} objects
+     * to and from {@link ByteBuf}.
      * <p>
      * This codec utilizes the organization's internal {@link PacketCodec} framework
-     * to facilitate the serialization and deserialization of {@link FluidStack}
+     * to facilitate the serialization and deserialization of {@link IntegerPayload}
      * within network packets. It ensures that the data is correctly transformed
      * between its in-memory representation and its byte stream format.
      * </p>
      */
-    public static final PacketCodec<RegistryByteBuf, FluidStack> PACKET_CODEC = PacketCodec.tuple(
-            FluidVariant.PACKET_CODEC, FluidStack::fluid,
-            PacketCodecs.LONG, FluidStack::amount,
-            FluidStack::new
-    );
+    public static final PacketCodec<ByteBuf, IntegerPayload> PACKET_CODEC =
+            PacketCodec.tuple(PacketCodecs.INTEGER, IntegerPayload::value, IntegerPayload::new);
+
+    /**
+     * Retrieves the unique identifier for this payload type.
+     *
+     * @return The ID associated with this IntegerPayload.
+     */
+    @Override
+    public Id<? extends CustomPayload> getId()
+    {
+        return ID;
+    }
 }

@@ -22,50 +22,49 @@
  * SOFTWARE.                                                                       *
  ***********************************************************************************/
 
-package jiraiyah.jiralib.network;
+package jiraiyah.jiralib.record;
 
-import io.netty.buffer.ByteBuf;
+import net.minecraft.item.ItemStack;
+import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 
 /**
- * A custom payload that contains a single float value.
+ * A custom payload that contains a single Item stack.
  *
  * @author TurtyWurty
  */
 @SuppressWarnings("unused")
-public record FloatPayload(float value) implements CustomPayload
+public record SingleStackPayload(ItemStack stack) implements CustomPayload
 {
     /**
-     * The unique identifier for the {@link FloatPayload} type.
+     * The unique identifier for the {@link SingleStackPayload} type.
      * <p>
-     * This ID is used to distinguish the {@link FloatPayload} when it is sent
+     * This ID is used to distinguish the {@link SingleStackPayload} when it is sent
      * over the network. It is constructed using an {@link Identifier} with the
-     * namespace "jiralib" and the path "float_payload".
+     * namespace "jiralib" and the path "single_stack_payload".
      * </p>
      */
-    public static final Id<FloatPayload> ID = new Id<>(Identifier.of("jiralib","float_payload"));
+    public static final Id<SingleStackPayload> ID = new Id<>(Identifier.of("jiralib","single_stack_payload"));
 
     /**
-     * A packet codec for encoding and decoding {@link FloatPayload} objects
-     * to and from {@link ByteBuf}.
+     * A packet codec for encoding and decoding {@link SingleStackPayload} objects
+     * to and from {@link RegistryByteBuf}.
      * <p>
      * This codec utilizes the organization's internal {@link PacketCodec} framework
-     * to facilitate the serialization and deserialization of {@link FloatPayload}
+     * to facilitate the serialization and deserialization of {@link SingleStackPayload}
      * within network packets. It ensures that the data is correctly transformed
      * between its in-memory representation and its byte stream format.
-     * The codec uses the float value for encoding and decoding.
      * </p>
      */
-    public static final PacketCodec<ByteBuf, FloatPayload> PACKET_CODEC =
-            PacketCodec.tuple(PacketCodecs.FLOAT, FloatPayload::value, FloatPayload::new);
+    public static final PacketCodec<RegistryByteBuf, SingleStackPayload> PACKET_CODEC =
+            PacketCodec.tuple(ItemStack.PACKET_CODEC, SingleStackPayload::stack, SingleStackPayload::new);
 
     /**
      * Retrieves the unique identifier for this payload type.
      *
-     * @return The ID associated with this FloatPayload.
+     * @return The ID associated with this SingleStackPayload.
      */
     @Override
     public Id<? extends CustomPayload> getId()

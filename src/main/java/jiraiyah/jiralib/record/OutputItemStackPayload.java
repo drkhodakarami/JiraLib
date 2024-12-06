@@ -31,10 +31,12 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.recipe.display.SlotDisplay;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.floatprovider.ConstantFloatProvider;
 import net.minecraft.util.math.floatprovider.FloatProvider;
 import net.minecraft.util.math.floatprovider.FloatProviderType;
@@ -57,51 +59,61 @@ import java.util.stream.IntStream;
  * @see FloatProvider
  */
 @SuppressWarnings("unused")
-public record OutputItemStack(Item item, IntProvider count, FloatProvider chance)
+public record OutputItemStackPayload(Item item, IntProvider count, FloatProvider chance) implements CustomPayload
 {
     /**
-     * Represents an empty {@link OutputItemStack} with no item, count, or chance.
-     * This constant can be used to signify the absence of an item stack output.
+     * The unique identifier for the {@link OutputItemStackPayload} type.
+     * <p>
+     * This ID is used to distinguish the {@link OutputItemStackPayload} when it is sent
+     * over the network. It is constructed using an {@link Identifier} with the
+     * namespace "jiralib" and the path "output_stack_payload".
+     * </p>
      */
-    public static final OutputItemStack EMPTY = new OutputItemStack(ItemStack.EMPTY);
+    public static final Id<OutputItemStackPayload> ID = new Id<>(Identifier.of("jiralib", "output_stack_payload"));
 
     /**
-     * A {@link MapCodec} for serializing and deserializing {@link OutputItemStack} objects.
+     * Represents an empty {@link OutputItemStackPayload} with no item, count, or chance.
+     * This constant can be used to signify the absence of an item stack output.
+     */
+    public static final OutputItemStackPayload EMPTY = new OutputItemStackPayload(ItemStack.EMPTY);
+
+    /**
+     * A {@link MapCodec} for serializing and deserializing {@link OutputItemStackPayload} objects.
      * <p>
      * This codec uses {@link RecordCodecBuilder} to define the structure of the
-     * {@link OutputItemStack} record, specifying how each field should be encoded
+     * {@link OutputItemStackPayload} record, specifying how each field should be encoded
      * and decoded. The `item` field is encoded using the item registry codec,
      * the `count` field is encoded using {@link IntProvider#VALUE_CODEC},
      * and the `chance` field is encoded using {@link FloatProvider#VALUE_CODEC}.
      * </p>
      */
-    public static final MapCodec<OutputItemStack> CODEC =
+    public static final MapCodec<OutputItemStackPayload> CODEC =
             RecordCodecBuilder.mapCodec(instance -> instance.group(
-                    Registries.ITEM.getCodec().fieldOf("item").forGetter(OutputItemStack::item),
-                    IntProvider.VALUE_CODEC.fieldOf("count").forGetter(OutputItemStack::count),
-                    FloatProvider.VALUE_CODEC.fieldOf("chance").forGetter(OutputItemStack::chance)
-            ).apply(instance, OutputItemStack::new));
+                    Registries.ITEM.getCodec().fieldOf("item").forGetter(OutputItemStackPayload::item),
+                    IntProvider.VALUE_CODEC.fieldOf("count").forGetter(OutputItemStackPayload::count),
+                    FloatProvider.VALUE_CODEC.fieldOf("chance").forGetter(OutputItemStackPayload::chance)
+            ).apply(instance, OutputItemStackPayload::new));
 
     /**
-     * A {@link PacketCodec} for encoding and decoding {@link OutputItemStack} objects
+     * A {@link PacketCodec} for encoding and decoding {@link OutputItemStackPayload} objects
      * to and from a {@link RegistryByteBuf}.
      * <p>
      * This codec utilizes the organization's internal {@link PacketCodec} framework
-     * to facilitate the serialization and deserialization of {@link OutputItemStack}
+     * to facilitate the serialization and deserialization of {@link OutputItemStackPayload}
      * within network packets. It ensures that the data is correctly transformed
      * between its in-memory representation and its byte stream format.
      * </p>
      */
-    public static final PacketCodec<RegistryByteBuf, OutputItemStack> PACKET_CODEC =
-            PacketCodec.ofStatic(OutputItemStack::encode, OutputItemStack::decode);
+    public static final PacketCodec<RegistryByteBuf, OutputItemStackPayload> PACKET_CODEC =
+            PacketCodec.ofStatic(OutputItemStackPayload::encode, OutputItemStackPayload::decode);
 
     /**
-     * The default chance value for an {@link OutputItemStack} when no specific chance is provided.
+     * The default chance value for an {@link OutputItemStackPayload} when no specific chance is provided.
      * This is a constant float provider that always returns a chance of 1.0F, indicating certainty.
      */
     private static final ConstantFloatProvider DEFAULT_CHANCE = ConstantFloatProvider.create(1.0F);
 
-    public OutputItemStack
+    public OutputItemStackPayload
     {
         if (item == null)
             throw new IllegalArgumentException("Item cannot be null");
@@ -118,7 +130,7 @@ public record OutputItemStack(Item item, IntProvider count, FloatProvider chance
      * @param count  The count of the item to output.
      * @param chance The chance of the item to output.
      */
-    public OutputItemStack(Item item, int count, float chance)
+    public OutputItemStackPayload(Item item, int count, float chance)
     {
         this(item, ConstantIntProvider.create(count), ConstantFloatProvider.create(chance));
     }
@@ -130,7 +142,7 @@ public record OutputItemStack(Item item, IntProvider count, FloatProvider chance
      *
      * @see ItemStack
      */
-    public OutputItemStack(ItemStack stack)
+    public OutputItemStackPayload(ItemStack stack)
     {
         this(stack.getItem(), ConstantIntProvider.create(stack.getCount()), DEFAULT_CHANCE);
     }
@@ -144,23 +156,23 @@ public record OutputItemStack(Item item, IntProvider count, FloatProvider chance
      *
      * @see IntProvider
      */
-    public OutputItemStack(Item item, IntProvider count, float chance)
+    public OutputItemStackPayload(Item item, IntProvider count, float chance)
     {
         this(item, count, ConstantFloatProvider.create(chance));
     }
 
     /**
-     * Encodes the given {@link OutputItemStack} into a {@link RegistryByteBuf}.
+     * Encodes the given {@link OutputItemStackPayload} into a {@link RegistryByteBuf}.
      * <p>
-     * This method writes the item, count, and chance fields of the {@link OutputItemStack}
+     * This method writes the item, count, and chance fields of the {@link OutputItemStackPayload}
      * into the buffer using the appropriate registry keys and codecs. It ensures that
      * the data is serialized correctly for network transmission.
      * </p>
      *
-     * @param buf   The {@link RegistryByteBuf} to encode the {@link OutputItemStack} into.
-     * @param stack The {@link OutputItemStack} to encode.
+     * @param buf   The {@link RegistryByteBuf} to encode the {@link OutputItemStackPayload} into.
+     * @param stack The {@link OutputItemStackPayload} to encode.
      */
-    private static void encode(RegistryByteBuf buf, OutputItemStack stack)
+    private static void encode(RegistryByteBuf buf, OutputItemStackPayload stack)
     {
         buf.writeRegistryKey(Registries.ITEM.getKey(stack.item()).orElseThrow());
 
@@ -172,17 +184,17 @@ public record OutputItemStack(Item item, IntProvider count, FloatProvider chance
     }
 
     /**
-     * Decodes an {@link OutputItemStack} from a {@link RegistryByteBuf}.
+     * Decodes an {@link OutputItemStackPayload} from a {@link RegistryByteBuf}.
      * <p>
      * This method reads the item, count, and chance fields from the buffer using
-     * the appropriate registry keys and codecs. It reconstructs the {@link OutputItemStack}
+     * the appropriate registry keys and codecs. It reconstructs the {@link OutputItemStackPayload}
      * from its serialized form.
      * </p>
      *
-     * @param buf The {@link RegistryByteBuf} to decode the {@link OutputItemStack} from.
-     * @return The decoded {@link OutputItemStack}.
+     * @param buf The {@link RegistryByteBuf} to decode the {@link OutputItemStackPayload} from.
+     * @return The decoded {@link OutputItemStackPayload}.
      */
-    private static OutputItemStack decode(RegistryByteBuf buf)
+    private static OutputItemStackPayload decode(RegistryByteBuf buf)
     {
         Item item = Registries.ITEM.get(buf.readRegistryKey(RegistryKeys.ITEM));
 
@@ -194,7 +206,7 @@ public record OutputItemStack(Item item, IntProvider count, FloatProvider chance
         FloatProviderType<?> chanceTypeInstance = Registries.FLOAT_PROVIDER_TYPE.get(chanceType);
         FloatProvider chance = ExtraPacketCodecs.decode(buf, chanceTypeInstance);
 
-        return new OutputItemStack(item, count, chance);
+        return new OutputItemStackPayload(item, count, chance);
     }
 
     /**
@@ -218,17 +230,17 @@ public record OutputItemStack(Item item, IntProvider count, FloatProvider chance
     }
 
     /**
-     * Converts this {@link OutputItemStack} into a {@link SlotDisplay} representation.
+     * Converts this {@link OutputItemStackPayload} into a {@link SlotDisplay} representation.
      * <p>
      * This method creates a composite slot display that represents the possible item stacks
-     * that can be generated from this {@link OutputItemStack}. It iterates over the range
+     * that can be generated from this {@link OutputItemStackPayload}. It iterates over the range
      * of possible counts, creating an {@link ItemStack} for each count, and wraps each
      * in a {@link SlotDisplay.StackSlotDisplay}. The resulting displays are collected
      * into a composite display.
      * </p>
      *
      * @return A {@link SlotDisplay} that visually represents the potential outputs
-     *         of this {@link OutputItemStack}.
+     *         of this {@link OutputItemStackPayload}.
      *
      * @see SlotDisplay
      * @see SlotDisplay.CompositeSlotDisplay
@@ -242,5 +254,16 @@ public record OutputItemStack(Item item, IntProvider count, FloatProvider chance
                          .map(SlotDisplay.StackSlotDisplay::new)
                          .map(SlotDisplay.class::cast)
                          .toList());
+    }
+
+    /**
+     * Retrieves the unique identifier for this payload type.
+     *
+     * @return The ID associated with this IntegerPayload.
+     */
+    @Override
+    public Id<? extends CustomPayload> getId()
+    {
+        return ID;
     }
 }
