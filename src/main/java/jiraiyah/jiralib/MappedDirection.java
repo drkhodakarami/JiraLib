@@ -13,7 +13,7 @@ public enum MappedDirection
     private static final Map<MappedDirection, Direction> MappedToDirection = new HashMap<>();
 
     static {
-        // Mapping Direction to JDirection
+        // Mapping Direction to MappedDirection
         directionToMapped.put(Direction.DOWN, MappedDirection.DOWN);
         directionToMapped.put(Direction.UP, MappedDirection.UP);
         directionToMapped.put(Direction.NORTH, MappedDirection.NORTH);
@@ -21,7 +21,7 @@ public enum MappedDirection
         directionToMapped.put(Direction.WEST, MappedDirection.WEST);
         directionToMapped.put(Direction.EAST, MappedDirection.EAST);
 
-        // Mapping JDirection to Direction
+        // Mapping MappedDirection to Direction
         MappedToDirection.put(MappedDirection.DOWN, Direction.DOWN);
         MappedToDirection.put(MappedDirection.UP, Direction.UP);
         MappedToDirection.put(MappedDirection.NORTH, Direction.NORTH);
